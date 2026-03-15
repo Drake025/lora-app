@@ -1,0 +1,69 @@
+name: personal_ai_app
+description: "LIORA - Your Personal AI Companion with Vision, Listening & Threat Detection"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.6
+  connectivity_plus: ^5.0.2
+  http: ^1.1.0
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+  path_provider: ^2.1.1
+  shared_preferences: ^2.2.2
+  uuid: ^4.2.1
+  intl: ^0.18.1
+  
+  # Camera & Vision
+  camera: ^0.10.5+9
+  tflite: ^1.1.2
+  image: ^4.1.4
+  
+  # Speech & Audio
+  speech_to_text: ^6.6.0
+  permission_handler: ^11.3.0
+  audio_waveforms: ^1.0.5
+  
+  # Notifications & Alerts
+  flutter_local_notifications: ^17.0.0
+  vibration: ^2.0.0
+  
+  # Media Playback
+  video_player: ^2.8.2
+  just_audio: ^0.9.36
+  chewie: ^1.7.4
+  
+  # Firebase
+  firebase_core: ^3.13.0
+  cloud_firestore: ^5.6.6
+  firebase_storage: ^12.4.4
+  
+  # UI Components
+  fl_chart: ^0.66.2
+  share_plus: ^7.2.2
+  url_launcher: ^6.2.4
+  
+  # PDF Generation
+  pdf: ^3.10.8
+  printing: ^5.12.0
+  
+  # Background Tasks
+  workmanager: ^0.5.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.1
+  hive_generator: ^2.0.1
+  build_runner: ^2.4.7
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/
+    - assets/models/
