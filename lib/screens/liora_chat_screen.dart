@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:permission_handler/permission_handler.dart';
 import '../services/local_ai.dart';
 import '../services/cloud_ai.dart';
 import '../services/memory_service.dart';
@@ -139,6 +138,7 @@ What would you like to explore?''',
       backgroundColor: const Color(0xFF16213E),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
       builder: (context) => Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
