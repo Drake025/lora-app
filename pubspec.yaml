@@ -1,5 +1,5 @@
 name: personal_ai_app
-description: "LIORA - Your Personal AI Companion with Vision, Listening & Threat Detection"
+description: "LIORA - Your Personal AI Companion"
 publish_to: 'none'
 version: 1.0.0+1
 
@@ -19,25 +19,6 @@ dependencies:
   uuid: ^4.2.1
   intl: ^0.18.1
   
-  # Camera & Vision
-  camera: ^0.10.5+9
-  image: ^4.1.4
-  # google_mlkit_image_labeling: ^0.13.0  # Commented - needs ML Kit setup
-  
-  # Speech & Audio
-  speech_to_text: ^6.6.0
-  permission_handler: ^11.3.0
-  audio_waveforms: ^1.0.5
-  
-  # Notifications & Alerts
-  flutter_local_notifications: ^17.0.0
-  vibration: ^2.0.0
-  
-  # Media Playback
-  video_player: ^2.8.2
-  just_audio: ^0.9.36
-  chewie: ^1.7.4
-  
   # Firebase
   firebase_core: ^3.13.0
   cloud_firestore: ^5.6.6
@@ -51,9 +32,6 @@ dependencies:
   # PDF Generation
   pdf: ^3.10.8
   printing: ^5.12.0
-  
-  # Background Tasks
-  workmanager: ^0.5.2
 
 dev_dependencies:
   flutter_test:
@@ -64,6 +42,3 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
-  assets:
-    - assets/
-    - assets/models/

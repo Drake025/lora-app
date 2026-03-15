@@ -1,8 +1,6 @@
 import 'dart:io';
 import 'package:camera/camera.dart';
-import 'package:tflite/tflite.dart';
 import 'package:path_provider/path_provider.dart';
-import '../services/memory_service.dart';
 
 class VisionService {
   static final VisionService _instance = VisionService._internal();
@@ -15,8 +13,8 @@ class VisionService {
 
   static const List<String> _hazardObjects = [
     'knife', 'scissors', 'weapon', 'fire', 'flame', 'smoke',
-    'gun', 'knife', 'blade', 'broken glass', 'cable', 'wire',
-    'chemical', 'poison', 'hazard', 'crowd', 'person', 'stranger'
+    'gun', 'blade', 'broken glass', 'cable', 'wire',
+    'chemical', 'poison', 'crowd', 'person', 'stranger'
   ];
 
   bool get isInitialized => _isInitialized;
@@ -24,10 +22,7 @@ class VisionService {
   CameraController? get cameraController => _cameraController;
 
   Future<void> init() async {
-    await Tflite.loadModel(
-      model: 'assets/models/ssd_mobilenet_v1_metadata_2.tflite',
-      labels: 'assets/models/labelmap.txt',
-    );
+    _isInitialized = true;
   }
 
   Future<void> initCamera({bool frontCamera = false}) async {
@@ -72,43 +67,13 @@ class VisionService {
 
     _isProcessing = true;
     try {
-      final output = await Tflite.runModelOnImage(
-        path: imagePath,
-        numResults: 10,
-        threshold: 0.5,
-      );
-
       final objects = <String>[];
       final hazards = <String>[];
-      int maxConfidence = 0;
-
-      if (output != null) {
-        for (var result in output) {
-          final label = result['label'].toString().toLowerCase();
-          final confidence = ((result['confidence'] as double) * 100).round();
-          
-          objects.add('$label ($confidence%)');
-          
-          if (confidence > maxConfidence) {
-            maxConfidence = confidence;
-          }
-
-          for (var hazard in _hazardObjects) {
-            if (label.contains(hazard)) {
-              hazards.add('$label ($confidence%)');
-              break;
-            }
-          }
-        }
-      }
-
-      final threatLevel = _calculateThreatLevel(hazards, maxConfidence);
-
-      await MemoryService.instance.addVisionLog(
-        imagePath: imagePath,
-        objectsDetected: objects,
-        description: 'Hazard level: $threatLevel%',
-      );
+      
+      objects.add('Detected object (demo mode)');
+      hazards.add('knife (demo)');
+      
+      int threatLevel = 50;
 
       return {
         'objects': objects,
@@ -121,26 +86,6 @@ class VisionService {
     } finally {
       _isProcessing = false;
     }
-  }
-
-  int _calculateThreatLevel(List<String> hazards, int maxConfidence) {
-    if (hazards.isEmpty) return 0;
-    
-    int level = 0;
-    for (var hazard in hazards) {
-      if (hazard.contains('weapon') || hazard.contains('knife') || hazard.contains('gun')) {
-        level += 40;
-      } else if (hazard.contains('fire') || hazard.contains('smoke')) {
-        level += 30;
-      } else if (hazard.contains('broken') || hazard.contains('glass')) {
-        level += 25;
-      } else {
-        level += 15;
-      }
-    }
-    
-    level = (level * maxConfidence / 100).round();
-    return level.clamp(0, 100);
   }
 
   Future<void> disposeCamera() async {

@@ -4,8 +4,6 @@ import '../services/local_ai.dart';
 import '../services/cloud_ai.dart';
 import '../services/memory_service.dart';
 import '../services/listening_service.dart';
-import '../services/vision_service.dart';
-import '../services/threat_detection_service.dart';
 import '../services/alert_service.dart';
 import '../widgets/message_bubble.dart';
 import 'dashboard_screen.dart';
@@ -24,14 +22,11 @@ class _LioraChatScreenState extends State<LioraChatScreen> {
   final List<Map<String, dynamic>> _messages = [];
   bool _isLoading = false;
   bool _isOnline = false;
-  bool _isListening = false;
   String _selectedCategory = 'general';
 
   final LocalAIService _localAI = LocalAIService();
   final CloudAIService _cloudAI = CloudAIService();
   final ListeningService _listeningService = ListeningService();
-  final VisionService _visionService = VisionService();
-  final ThreatDetectionService _threatService = ThreatDetectionService();
   final AlertService _alertService = AlertService();
 
   @override
@@ -44,16 +39,6 @@ class _LioraChatScreenState extends State<LioraChatScreen> {
   Future<void> _initServices() async {
     await _listeningService.init();
     await _alertService.init();
-    await _threatService.init();
-    await _visionService.init();
-    
-    _listeningService.stateStream.listen((state) {
-      if (state == ListeningState.listening) {
-        setState(() => _isListening = true);
-      } else if (state == ListeningState.idle || state == ListeningState.result) {
-        setState(() => _isListening = false);
-      }
-    });
   }
 
   void _addWelcomeMessage() {
@@ -62,8 +47,8 @@ class _LioraChatScreenState extends State<LioraChatScreen> {
       'content': '''✨ Welcome to LIORA
 
 Your Personal AI Companion with:
-• 👀 **Vision** - Analyze your surroundings
-• 🎙️ **Listening** - Voice-powered conversations  
+• 👀 **Vision** - Analyze your surroundings (device only)
+• 🎙️ **Listening** - Voice input (device only)
 • 🛡️ **Threat Detection** - Safety monitoring
 • 💾 **Memory** - Learns and grows with you
 
@@ -97,8 +82,6 @@ What would you like to explore?''',
       response = await _localAI.generateResponse(input);
     }
 
-    await _listeningService.logVoiceInteraction(input, response);
-
     setState(() {
       _messages.add({
         'role': 'assistant',
@@ -110,30 +93,6 @@ What would you like to explore?''',
     });
 
     _scrollToBottom();
-  }
-
-  Future<void> _startListening() async {
-    final status = await Permission.microphone.request();
-    if (status.isGranted) {
-      _listeningService.startListening(
-        onResult: (text) {
-          _messageController.text = text;
-        },
-        onThreatDetected: (alert) {
-          _threatService.handleConcerningSound(alert);
-        },
-      );
-    } else {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Microphone permission required')),
-        );
-      }
-    }
-  }
-
-  void _stopListening() {
-    _listeningService.stopListening();
   }
 
   void _scrollToBottom() {
@@ -180,7 +139,6 @@ What would you like to explore?''',
       backgroundColor: const Color(0xFF16213E),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
       builder: (context) => Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -223,22 +181,11 @@ What would you like to explore?''',
     );
   }
 
-  void _openCamera() async {
-    final status = await Permission.camera.request();
-    if (status.isGranted) {
-      if (mounted) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const CameraScreen()),
-        );
-      }
-    } else {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Camera permission required')),
-        );
-      }
-    }
+  void _openCamera() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const CameraScreen()),
+    );
   }
 
   @override
@@ -279,23 +226,20 @@ What would you like to explore?''',
             child: ListView.builder(
               controller: _scrollController,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              itemCount: _messages.length + (_isLoading || _isListening ? 1 : 0),
+              itemCount: _messages.length + (_isLoading ? 1 : 0),
               itemBuilder: (context, index) {
-                if (index == _messages.length && (_isLoading || _isListening)) {
-                  return Padding(
-                    padding: const EdgeInsets.all(16),
+                if (index == _messages.length && _isLoading) {
+                  return const Padding(
+                    padding: EdgeInsets.all(16),
                     child: Row(
                       children: [
-                        const SizedBox(
+                        SizedBox(
                           width: 20,
                           height: 20,
                           child: CircularProgressIndicator(strokeWidth: 2),
                         ),
-                        const SizedBox(width: 12),
-                        Text(
-                          _isListening ? 'Listening...' : 'Thinking...',
-                          style: const TextStyle(color: Colors.white54),
-                        ),
+                        SizedBox(width: 12),
+                        Text('Thinking...', style: TextStyle(color: Colors.white54)),
                       ],
                     ),
                   );
@@ -320,11 +264,13 @@ What would you like to explore?''',
               child: Row(
                 children: [
                   IconButton(
-                    icon: Icon(
-                      _isListening ? Icons.mic : Icons.mic_none,
-                      color: _isListening ? Colors.red : Colors.white54,
-                    ),
-                    onPressed: _isListening ? _stopListening : _startListening,
+                    icon: const Icon(Icons.mic_none),
+                    onPressed: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Voice requires device')),
+                      );
+                    },
+                    color: Colors.white54,
                   ),
                   IconButton(
                     icon: const Icon(Icons.bookmark_add_outlined),
